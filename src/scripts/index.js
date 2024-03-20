@@ -1,6 +1,9 @@
 //Строгий режим
 'use strict';
 
+import '../pages/index.css';//Подключение главного файла стилей.]
+import { initialCards } from './cards.js';
+
 // @todo: Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content;
 

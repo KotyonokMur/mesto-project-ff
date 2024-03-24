@@ -1,3 +1,8 @@
+"use strict"; // Строгий режим
+
+// @todo: темлпейт карточки
+import { cardTemplate } from "./index.js";
+
 // @todo: Карточки
 export const initialCards = [
   {
@@ -26,9 +31,6 @@ export const initialCards = [
   },
 ];
 
-// @todo: темлпейт карточки
-const cardTemplate = document.querySelector("#card-template").content;
-
 // @todo: Функция удаления карточки
 export function deleteCard(event) {
   const deleteItem = event.target.closest(".card");
@@ -47,4 +49,10 @@ export function createCard(name, link, deleteCallback) {
   deleteButton.addEventListener("click", deleteCallback);
 
   return cardElement;
+}
+
+// Обработчик нажатия кнопки лайка
+export function handleLikeButtonClick(event) {
+  // Переключаем класс card__like-button_is-active
+  event.currentTarget.classList.toggle("card__like-button_is-active");
 }

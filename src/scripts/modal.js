@@ -1,11 +1,5 @@
 "use strict"; // Строгий режим
 
-import {
-  handleOverlayClick,
-  handleCloseButtonClick,
-  handleKeyDown,
-} from "./index.js";
-
 // Закрыть модальное окно
 export function closeModal(modal) {
   // Добавление класса "попап анимированный"
@@ -27,6 +21,7 @@ export function closeModal(modal) {
   }, 600); // Задержка анимации, в миллисекундах
 }
 
+// Открыть модальное окно
 export function openModal(modal) {
   //Добавление анимации
   modal.classList.add("popup_is-animated");
@@ -42,4 +37,30 @@ export function openModal(modal) {
   modal
     .querySelector(".popup__close")
     .addEventListener("click", handleCloseButtonClick);
+}
+
+//Обработчики закрытия попапов:
+// Закрытие через оверлей
+function handleOverlayClick(event) {
+  const modal = event.currentTarget;
+  if (event.target === modal) {
+    //Если нажали на оверлей, значит нажали на .popup => закрываем
+    closeModal(modal);
+  }
+}
+
+// Закрытие через кнопку крестика
+function handleCloseButtonClick(event) {
+  //Ищет ближайший попап к кнопке и закрывает его
+  const modal = event.target.closest(".popup");
+  closeModal(modal);
+}
+
+// Закрытие через Esc
+function handleKeyDown(event) {
+  //Ищет открытый попап и закрывает его
+  if (event.key === "Escape") {
+    const openedModal = document.querySelector(".popup_is-opened");
+    closeModal(openedModal);
+  }
 }

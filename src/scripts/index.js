@@ -3,7 +3,8 @@
 import "../pages/index.css"; // Подключение главного файла стилей.
 import { initialCards } from "./cards.js"; // Карточки по-умолчанию
 import { deleteCard, createCard, likeCard } from "./card.js"; // Функции карточек
-import { openModal, closeModal } from "./modal.js";
+import { openModal, closeModal } from "./modal.js"; // Функции модальных окон
+import { hideInputError, setEventListeners } from "./validation.js"; // Валидация модальных окон
 
 // DOM Для карточек
 const content = document.querySelector(".places");
@@ -18,6 +19,9 @@ const newProfileNameInput = editModal.querySelector(".popup__input_type_name");
 const newProfileDescriptionInput = editModal.querySelector(
   ".popup__input_type_description"
 );
+// Подтягиваем фактическое имя/описание профиля
+newProfileNameInput.value = profileTitle.textContent;
+newProfileDescriptionInput.value = profileDescription.textContent;
 
 // DOM Для add button
 const newCardButton = document.querySelector(".profile__add-button");
@@ -34,6 +38,15 @@ const captionElement = cardModal.querySelector(".popup__caption");
 
 // DOM Для очистки формы
 const formElement = newCardModal.querySelector(".popup__form");
+
+// Элемент настроек валидации
+const validationConfig = {
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "button_inactive",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
 
 // Base logic
 // Добавить слушатель на кнопку edit
@@ -68,11 +81,14 @@ editModal
   .querySelector(".popup__form")
   .addEventListener("submit", editFormHandler);
 
-// Поведение попапа изменения профиля (edit)
+// Поведение попапа изменения профиля (edit)--------------------------------!!!!!!!!!!!!!!!
 function editModalFunction(modal) {
   // Подтягиваем фактическое имя/описание профиля
   newProfileNameInput.value = profileTitle.textContent;
   newProfileDescriptionInput.value = profileDescription.textContent;
+
+  // Очищаем ошибки валидации формы и делаем кнопку неактивной
+  clearValidation(modal.querySelector(".popup__form"), validationConfig);
 
   // Открываем модальное окно
   openModal(modal);
@@ -118,6 +134,9 @@ function newCardFormHandler(event) {
 
   // Очищаем поля формы с помощью метода reset()
   formElement.reset();
+  /* "Используйте функцию clearValidation
+  при очистке формы добавления карточки." */
+  clearValidation(event.target, validationConfig);
 
   // Закрываем модальное окно
   closeModal(newCardModal);
@@ -145,3 +164,44 @@ function openCard(event) {
   // Открытие попапа карточки
   openModal(cardModal);
 }
+
+// Очистка ошибок валидации и сделать кнопку неактивной
+const clearValidation = (formElement, settings) => {
+  const inputList = Array.from(
+    formElement.querySelectorAll(settings.inputSelector)
+  );
+  const buttonElement = formElement.querySelector(
+    settings.submitButtonSelector
+  );
+
+  inputList.forEach((inputElement) => {
+    hideInputError(formElement, inputElement, settings);
+  });
+
+  buttonElement.disabled = true;
+  buttonElement.classList.add(settings.inactiveButtonClass);
+};
+
+// Включение валидации всех форм
+const enableValidation = (settings) => {
+  const formList = Array.from(document.querySelectorAll(settings.formSelector));
+  formList.forEach((formElement) => {
+    formElement.addEventListener("submit", (evt) => {
+      evt.preventDefault(); //(!) Возможно это нужно будет убрать т.к. уже есть в функциях модальных окон
+    });
+    //console.log(formElement); del (всё так, выводит два окна)
+    setEventListeners(formElement, settings);
+  });
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Вызываем функцию enableValidation с передачей объекта настроек
+  enableValidation({
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "button_inactive",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible",
+  });
+});

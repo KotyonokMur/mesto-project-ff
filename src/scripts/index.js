@@ -1,7 +1,7 @@
 "use strict"; // Строгий режим
 
 import "../pages/index.css"; // Подключение главного файла стилей.
-import { initialCards } from "./cards.js"; // Карточки по-умолчанию
+//import { initialCards } from "./cards.js"; // Карточки по-умолчанию
 import { deleteCard, createCard, likeCard } from "./card.js"; // Функции карточек
 import { openModal, closeModal } from "./modal.js"; // Функции модальных окон
 import { hideInputError, setEventListeners } from "./validation.js"; // Валидация модальных окон
@@ -19,9 +19,6 @@ const newProfileNameInput = editModal.querySelector(".popup__input_type_name");
 const newProfileDescriptionInput = editModal.querySelector(
   ".popup__input_type_description"
 );
-// Подтягиваем фактическое имя/описание профиля
-newProfileNameInput.value = profileTitle.textContent;
-newProfileDescriptionInput.value = profileDescription.textContent;
 
 // DOM Для add button
 const newCardButton = document.querySelector(".profile__add-button");
@@ -30,14 +27,28 @@ const newCardNameInput = newCardModal.querySelector(
   ".popup__input_type_card-name"
 );
 const newCardUrlInput = newCardModal.querySelector(".popup__input_type_url");
+const newCardFormElement = newCardModal.querySelector(".popup__form");
 
 // DOM для открытия карточек
 const cardModal = document.querySelector(".popup_type_image");
 const imageElement = cardModal.querySelector(".popup__image");
 const captionElement = cardModal.querySelector(".popup__caption");
 
-// DOM Для очистки формы
-const formElement = newCardModal.querySelector(".popup__form");
+// DOM для edit image button
+const avatarImage = document.querySelector(".profile__image");
+const newImageModal = document.querySelector(".popup_type_new-image");
+const newImageModalInput = newImageModal.querySelector(
+  ".popup__input_type_url"
+);
+const newImageButton = document.querySelector(".profile__image-edit-button");
+const newImageFormElement = newImageModal.querySelector(".popup__form");
+
+// DOM для delete button
+/*
+Дополнительно. Попап удаления карточки
+Это дополнительное задание — выполнять его не обязательно. (!)
+(Пока решил не выполнять)
+*/
 
 // Элемент настроек валидации
 const validationConfig = {
@@ -49,7 +60,7 @@ const validationConfig = {
 };
 
 // Base logic
-// Добавить слушатель на кнопку edit
+// Добавить слушатель на кнопку edit profile
 editButton.addEventListener("click", () => {
   editModalFunction(editModal);
 });
@@ -59,16 +70,10 @@ newCardButton.addEventListener("click", () => {
   openModal(newCardModal);
 });
 
-// Вывести карточки на страницу
-initialCards.forEach((item) => {
-  const cardElement = createCard(
-    item.name,
-    item.link,
-    deleteCard,
-    likeCard,
-    openCard
-  );
-  cardList.append(cardElement);
+// Добавить слушатель на кнопку edit image
+
+newImageButton.addEventListener("click", () => {
+  openModal(newImageModal);
 });
 
 // Добавить обработчик события submit для формы new card в модальном окне
@@ -81,7 +86,12 @@ editModal
   .querySelector(".popup__form")
   .addEventListener("submit", editFormHandler);
 
-// Поведение попапа изменения профиля (edit)--------------------------------!!!!!!!!!!!!!!!
+// Добавить обработчик события submit для формы new image в модальном окне
+newImageModal
+  .querySelector(".popup__form")
+  .addEventListener("submit", newImageHandler);
+
+// Поведение попапа изменения профиля (edit)
 function editModalFunction(modal) {
   // Подтягиваем фактическое имя/описание профиля
   newProfileNameInput.value = profileTitle.textContent;
@@ -95,51 +105,104 @@ function editModalFunction(modal) {
 }
 
 // Обработчики submit
+function newImageHandler(event) {
+  //Убираем стандартное поведение
+  event.preventDefault();
+
+  renderLoadingForm(true, newImageModal.querySelector(".popup__button"));
+  postNewAvatar(newImageModalInput.value)
+    .then((res) => {
+      avatarImage.style.backgroundImage = `url(${res.avatar})`;
+      // Очищаем поля формы с помощью метода reset()
+      newImageFormElement.reset();
+      /* "Используйте функцию clearValidation
+          при очистке формы добавления карточки." */
+      clearValidation(event.target, validationConfig);
+    })
+    .catch((error) => {
+      console.log(`Ошибка: ${error.message}`);
+    })
+    .finally(() =>{
+      closeModal(newImageModal);
+      renderLoadingForm(false, newImageModal.querySelector(".popup__button"));
+    });
+}
+
 // Обработчик edit button
 function editFormHandler(event) {
   //Убираем стандартное поведение
   event.preventDefault();
-
+  renderLoadingForm(true, editModal.querySelector(".popup__button"));
   // Присваиваем новое имя/описание профилю
   const newName = newProfileNameInput.value;
   const newDescription = newProfileDescriptionInput.value;
 
-  profileTitle.textContent = newName;
-  profileDescription.textContent = newDescription;
-
-  //Закрываем окно
-  closeModal(editModal);
+  //Изменяем настройки на сервере
+  editUserData(newName, newDescription)
+    .then((res) => {
+      // Если запрос прошел успешно, присваиваем профилю новое имя
+      profileTitle.textContent = res.name;
+      profileDescription.textContent = res.about;
+    })
+    .catch((error) => {
+      // Вывод сообщения об ошибке в консоль
+      console.log(`Ошибка: ${error.message}`);
+    })
+    .finally(() => {
+      //Закрываем окно
+      closeModal(editModal);
+      renderLoadingForm(false, editModal.querySelector(".popup__button"));
+    });
 }
 
 // Обработчик new button
 function newCardFormHandler(event) {
   // убираем стандартное поведение
   event.preventDefault();
+  renderLoadingForm(true, newCardModal.querySelector(".popup__button"));
+  // Получаем user._id и создаем карточку
+  getUserData()
+    .then((user) => {
+      // Имя и ссылка на картинку новой карточки
+      const newCard = {
+        name: newCardNameInput.value,
+        link: newCardUrlInput.value,
+      };
 
-  // Имя и ссылка на картинку новой карточки
-  const placeName = newCardNameInput.value;
-  const placeUrl = newCardUrlInput.value;
+      postNewCard(newCard)
+        .then((res) => {
+          // Добавляем новую карточку в список
+          const cardElement = createCard(
+            user._id,
+            res,
+            deleteCard,
+            likeCard,
+            openCard
+          );
 
-  // Создаем новую карточку
-  const newCard = createCard(
-    placeName,
-    placeUrl,
-    deleteCard,
-    likeCard,
-    openCard
-  );
+          // Добавление карточки в DOM
+          cardList.prepend(cardElement);
 
-  // Добавляем новую карточку в список
-  cardList.prepend(newCard);
-
-  // Очищаем поля формы с помощью метода reset()
-  formElement.reset();
-  /* "Используйте функцию clearValidation
-  при очистке формы добавления карточки." */
-  clearValidation(event.target, validationConfig);
-
-  // Закрываем модальное окно
-  closeModal(newCardModal);
+          // Очищаем поля формы с помощью метода reset()
+          newCardFormElement.reset();
+          /* "Используйте функцию clearValidation
+    при очистке формы добавления карточки." */
+          clearValidation(event.target, validationConfig);
+        })
+        // Не получилось запостить новую карточку
+        .catch((error) => {
+          console.log(`Ошибка: ${error.message}`);
+        })
+        .finally(() => {
+          // Закрываем модальное окно
+          closeModal(newCardModal);
+          renderLoadingForm(false, newCardModal.querySelector(".popup__button"));
+        });
+    })
+    // Не получилось загрузить данные пользователя
+    .catch((error) => {
+      console.log(`Ошибка: ${error.message}`);
+    });
 }
 
 // Функция открытия карточки
@@ -165,6 +228,8 @@ function openCard(event) {
   openModal(cardModal);
 }
 
+//--------------------------------spr7_validation--------------------------------
+
 // Очистка ошибок валидации и сделать кнопку неактивной
 const clearValidation = (formElement, settings) => {
   const inputList = Array.from(
@@ -186,14 +251,15 @@ const clearValidation = (formElement, settings) => {
 const enableValidation = (settings) => {
   const formList = Array.from(document.querySelectorAll(settings.formSelector));
   formList.forEach((formElement) => {
+    /*
     formElement.addEventListener("submit", (evt) => {
-      evt.preventDefault(); //(!) Возможно это нужно будет убрать т.к. уже есть в функциях модальных окон
-    });
-    //console.log(formElement); del (всё так, выводит два окна)
+      evt.preventDefault();
+    });*/
     setEventListeners(formElement, settings);
   });
 };
 
+// Ждём пока загрузится DOM
 document.addEventListener("DOMContentLoaded", () => {
   // Вызываем функцию enableValidation с передачей объекта настроек
   enableValidation({
@@ -205,3 +271,57 @@ document.addEventListener("DOMContentLoaded", () => {
     errorClass: "popup__error_visible",
   });
 });
+
+//--------------------------------spr7_api-integration--------------------------------
+
+import {
+  getCardsFromServer,
+  getUserData,
+  editUserData,
+  postNewCard,
+  postNewAvatar,
+} from "./api.js";
+
+// Анимация загрузки ответа от сервера на кнопках "Сохранить" в модальных окнах
+function renderLoadingForm(isLoading, popupButton) {
+  if (isLoading) {
+    popupButton.textContent = "Сохранение...";
+  } else {
+    popupButton.textContent = "Сохранить";
+  }
+}
+
+// Обработка карточек с сервера
+function renderCardsFromServer(data, userId) {
+  data.forEach((item) => {
+    const cardElement = createCard(
+      userId,
+      item,
+      deleteCard,
+      likeCard,
+      openCard
+    );
+    // Добавление карточки в DOM
+    cardList.append(cardElement);
+  });
+}
+
+// Обработка профиля с сервера
+function renderUserFromServer(user) {
+  avatarImage.style.backgroundImage = `url(${user.avatar})`;
+  profileTitle.textContent = user.name;
+  profileDescription.textContent = user.about;
+}
+
+// Базовая логика подгрузки информации о карточках и пользователе с сервера
+Promise.all([getCardsFromServer(), getUserData()])
+  .then(([data, user]) => {
+    // Подтянуть и обработать карточки с сервера
+    renderCardsFromServer(data, user._id);
+    //Подтянуть и обработать настройки пользователя с сервера
+    renderUserFromServer(user);
+  })
+  .catch((error) => {
+    // Вывод сообщения об ошибке в консоль
+    console.log(`Ошибка: ${error.message}`);
+  });

@@ -14,7 +14,9 @@
   </header>
   <main class="content">
     <section class="profile page__section">
-      <div class="profile__image" style="background-image: url(<%=require('./images/avatar.jpg')%>);"></div>
+      <div class="profile__image" style="background-image: url(<%=require('./images/avatar.jpg')%>);">
+        <button class = profile__image-edit-button type="button"></button>
+      </div>
       <div class="profile__info">
         <h1 class="profile__title">Жак-Ив Кусто</h1>
         <button class="profile__edit-button" type="button"></button>
@@ -89,6 +91,22 @@
       </form>
     </div>
   </div>
+  <div class="popup popup_type_new-image">
+    <div class="popup__content">
+      <button type="button" class="popup__close"></button>
+      <h3 class="popup__title">Обновить аватар</h3>
+      <form class="popup__form" name="new-image">
+        <input type="url" 
+        name="link" 
+        class="popup__input popup__input_type_url" 
+        placeholder="Ссылка на картинку" 
+        required
+        >
+        <span class="popup__input-error link-input-error"></span>
+        <button type="submit" class="button popup__button">Сохранить</button>
+      </form>
+    </div>
+  </div>
   <div class="popup popup_type_image">
     <div class="popup__content popup__content_content_image">
       <button type="button" class="popup__close"></button>
@@ -104,7 +122,10 @@
     <div class="card__description">
       <h2 class="card__title">
       </h2>
-      <button type="button" class="card__like-button"></button>
+      <div class = card__like-container>
+        <button type="button" class="card__like-button"></button>
+        <span class = "card__like-button_likes"></span>
+      </div>
     </div>
   </li>
 </template>

@@ -2,9 +2,6 @@
 
 // Закрыть модальное окно
 export function closeModal(modal) {
-  // Добавление класса "попап анимированный"
-  modal.classList.add("popup_is-animated");
-
   // Удаление класса "попап открыт"
   modal.classList.remove("popup_is-opened");
 

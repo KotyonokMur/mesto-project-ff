@@ -1,13 +1,14 @@
 "use strict"; // Строгий режим
-// @todo: DOM узлы
-// Темлпейт карточки
-const cardTemplate = document.querySelector("#card-template").content;
 
 import {
   deleteCardFromServer,
   likeCardOnServer,
   dislikeCardOnServer,
 } from "./api.js";
+
+// @todo: DOM узлы
+// Темлпейт карточки
+const cardTemplate = document.querySelector("#card-template").content;
 
 // Функция удаления карточки
 export function deleteCard(event, card) {

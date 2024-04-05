@@ -86,3 +86,28 @@ export const toggleButtonState = (
     buttonElement.classList.remove(inactiveButtonClass);
   }
 };
+
+// Очистка ошибок валидации и сделать кнопку неактивной
+export const clearValidation = (formElement, settings) => {
+  const inputList = Array.from(
+    formElement.querySelectorAll(settings.inputSelector)
+  );
+  const buttonElement = formElement.querySelector(
+    settings.submitButtonSelector
+  );
+
+  inputList.forEach((inputElement) => {
+    hideInputError(formElement, inputElement, settings);
+  });
+
+  buttonElement.disabled = true;
+  buttonElement.classList.add(settings.inactiveButtonClass);
+};
+
+// Включение валидации всех форм
+export const enableValidation = (settings) => {
+  const formList = Array.from(document.querySelectorAll(settings.formSelector));
+  formList.forEach((formElement) => {
+    setEventListeners(formElement, settings);
+  });
+};

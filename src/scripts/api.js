@@ -15,6 +15,8 @@ export const config = {
 export const handleResponse = (res) => {
   if (res.ok) {
     return res.json();
+  } else {
+    throw new Error("Ошибка: неверный статус ответа сервера (handleResponse)");
   }
 };
 
@@ -24,16 +26,7 @@ export const getCardsFromServer = () => {
     headers: {
       authorization: config.headers.authorization,
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          "Ошибка: неверный статус ответа в функции getCardsFromServer"
-        );
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Получение данных пользователя с сервера
@@ -42,14 +35,7 @@ export const getUserData = () => {
     headers: {
       authorization: config.headers.authorization,
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Ошибка: неверный статус ответа в функции getUserData");
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Запрос на изменение данных пользователя
@@ -58,20 +44,13 @@ export const editUserData = (newName, newDescription) => {
     method: "PATCH",
     headers: {
       authorization: config.headers.authorization,
-      "Content-Type": "application/json",
+      "Content-Type": config.headers["Content-Type"],
     },
     body: JSON.stringify({
       name: newName,
       about: newDescription,
     }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Ошибка: неверный статус ответа в функции editUser");
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Запостить новую карточку
@@ -80,20 +59,13 @@ export const postNewCard = (newCard) => {
     method: "POST",
     headers: {
       authorization: config.headers.authorization,
-      "Content-Type": "application/json",
+      "Content-Type": config.headers["Content-Type"],
     },
     body: JSON.stringify({
       name: newCard.name,
       link: newCard.link,
     }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Ошибка: неверный статус ответа в функции postNewCard");
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Удалить карточку из сервера
@@ -103,14 +75,7 @@ export const deleteCardFromServer = (card) => {
     headers: {
       authorization: config.headers.authorization,
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Ошибка: неверный статус ответа в функции deleteCard");
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Поставить лайк карточке на сервере
@@ -122,16 +87,7 @@ export const likeCardOnServer = (card) => {
     headers: {
       authorization: config.headers.authorization,
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          "Ошибка: неверный статус ответа в функции likeCardOnServer"
-        );
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
 // Убрать лайк карточке на сервере
@@ -141,35 +97,19 @@ export const dislikeCardOnServer = (card) => {
     headers: {
       authorization: config.headers.authorization,
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          "Ошибка: неверный статус ответа в функции dislikeCardOnServer"
-        );
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };
 
-// Обновить аватарку профиля 
+// Обновить аватарку профиля
 export const postNewAvatar = (url) => {
   return fetch(config.baseUrl + "/users/me/avatar", {
     method: "PATCH",
     headers: {
       authorization: config.headers.authorization,
-      "Content-Type": "application/json",
+      "Content-Type": config.headers["Content-Type"],
     },
     body: JSON.stringify({
       avatar: url,
     }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Ошибка: неверный статус ответа в функции postNewAvatar");
-      }
-      return response;
-    })
-    .then(handleResponse);
+  }).then(handleResponse);
 };

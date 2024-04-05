@@ -62,6 +62,11 @@ export function likeCard(event, card) {
   }
 }
 
+// Функция получения шаблона карточки
+function getCardTemplate() {
+  return cardTemplate.querySelector(".card").cloneNode(true);
+}
+
 // Функция создания карточки
 export function createCard(
   userId,
@@ -70,13 +75,14 @@ export function createCard(
   likeCallBack,
   openCallback
 ) {
-  const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
+  const cardElement = getCardTemplate();
+  const cardImage = cardElement.querySelector(".card__image"); // Выносим поиск элемента в отдельную переменную
   const likeButton = cardElement.querySelector(".card__like-button");
   const deleteButton = cardElement.querySelector(".card__delete-button");
 
   cardElement.querySelector(".card__title").textContent = card.name;
-  cardElement.querySelector(".card__image").src = card.link;
-  cardElement.querySelector(".card__image").alt = "Изображение " + card.name;
+  cardImage.src = card.link; 
+  cardImage.alt = "Изображение " + card.name; 
 
   // Отображение лайков на карточке
   if (card.likes.length > 0) {
